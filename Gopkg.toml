@@ -1,0 +1,30 @@
+[[constraint]]
+  branch = "master"
+  name = "github.com/docker/cli"
+
+[[constraint]]
+  name = "github.com/fsouza/go-dockerclient"
+  version = "1.2.0"
+
+[[constraint]]
+  name = "github.com/pkg/errors"
+  version = "0.8.0"
+
+[[constraint]]
+  name = "github.com/sirupsen/logrus"
+  version = "1.0.5"
+
+[[constraint]]
+  name = "github.com/go-test/deep"
+  version = "1.0.1"
+
+# Required for github.com/docker/cli
+# https://github.com/docker/cli/blob/6c9232a5682cbfffc6a53ebb8ec9bfbb4b55381d/vendor.conf#L68
+[[override]]
+  name = "github.com/xeipuuv/gojsonschema"
+  revision = "93e72a773fade158921402d6a24c819b48aba29d"
+
+[prune]
+  go-tests = true
+  unused-packages = true
+  non-go = true
