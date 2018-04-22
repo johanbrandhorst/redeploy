@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/johanbrandhorst/redeploy.svg?branch=master)](https://travis-ci.org/johanbrandhorst/redeploy)
+[![Docker Automated build](https://img.shields.io/docker/automated/jrottenberg/ffmpeg.svg)](https://hub.docker.com/r/jfbrandhorst/redeploy/)
 # Redeploy
 
 Redeploy is a tool for easily and automatically redeploying docker images on a single host.
