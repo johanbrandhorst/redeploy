@@ -86,6 +86,8 @@ func (h DockerHook) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 		}
 	}()
 
+	h.logger.WithField("repo", hook.Repository.RepoURL).Debug("Request received")
+
 	image := hook.Repository.RepoName + ":" + hook.PushData.Tag
 	foundServices, ok := h.imageToService[image]
 	if !ok && hook.PushData.Tag == "latest" {
@@ -111,6 +113,8 @@ func (h DockerHook) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 		OutputStream: h.logger.Out,
 	}
 
+	h.logger.WithField("image", image).Debug("Pulling image")
+
 	err = h.client.PullImage(pullOpts, docker.AuthConfiguration{})
 	if err != nil {
 		h.logger.WithError(err).Error("Failed to pull image")
@@ -122,18 +126,18 @@ func (h DockerHook) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 		containers, err := h.client.ListContainers(docker.ListContainersOptions{
 			All:     true,
 			Context: ctx,
-			Filters: map[string][]string{
-				"name": {service.Name},
-			},
 		})
 		if err != nil {
 			h.logger.WithError(err).Error("Failed to list running containers")
 			// Soldier on anyway
+		} else {
+			h.logger.Debug("Listed running containers")
 		}
 
 		var id string
 		for _, container := range containers {
-			if sliceContains(container.Names, service.Name) {
+			if sliceContains(container.Names, "/"+service.Name) {
+				h.logger.WithField("name", service.Name).Debug("Found existing container")
 				id = container.ID
 				break
 			}
@@ -145,6 +149,8 @@ func (h DockerHook) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 			if err != nil {
 				h.logger.WithError(err).Error("Failed to stop running container")
 				// Soldier on anyway
+			} else {
+				h.logger.WithField("name", service.Name).Debug("Stopped existing container")
 			}
 
 			err = h.client.RemoveContainer(docker.RemoveContainerOptions{
@@ -154,6 +160,8 @@ func (h DockerHook) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 			if err != nil {
 				h.logger.WithError(err).Error("Failed to remove existing container")
 				// Soldier on anyway
+			} else {
+				h.logger.WithField("name", service.Name).Debug("Deleted existing container")
 			}
 		}
 
@@ -168,19 +176,26 @@ func (h DockerHook) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 			return
 		}
 
+		h.logger.WithField("name", service.Name).Debug("Created container")
+
 		err = h.client.StartContainerWithContext(c.ID, nil, ctx)
 		if err != nil {
 			h.logger.WithError(err).Error("Failed to start container")
 			http.Error(resp, "internal error", http.StatusInternalServerError)
 			return
 		}
+
+		h.logger.WithField("name", service.Name).Debug("Started container")
 	}
 
 	resp.WriteHeader(http.StatusOK)
 	_, err = http.Get(hook.CallbackURL)
 	if err != nil {
 		h.logger.WithError(err).Error("Failed to send success to CallbackURL")
+		return
 	}
+
+	h.logger.WithField("repo", hook.Repository.RepoName).Debug("Successfully sent callback")
 }
 
 func sliceContains(slice []string, in string) bool {
@@ -212,7 +227,7 @@ type PushData struct {
 
 // Repository contains metadata about the repository.
 type Repository struct {
-	CommentCount    string `json:"comment_count"`
+	CommentCount    int    `json:"comment_count"`
 	DateCreated     int    `json:"date_created"`
 	Description     string `json:"description"`
 	Dockerfile      string `json:"dockerfile"`
