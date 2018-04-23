@@ -46,7 +46,7 @@ $ docker run --rm -d \
     # Mount the docker socket to allow container control.
     # Alternatively, define $DOCKER_HOST to use a remote docker host.
     -v /var/run/docker.sock:/var/run/docker.sock \
-    --name redeploy
+    --name redeploy \
     -p 8555:8555 \
     jfbrandhorst/redeploy --config /services.yaml --path yourconfigureddockerhubpath
 Serving on http://0.0.0.0:8555/yourconfigureddockerhubpath
