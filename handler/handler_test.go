@@ -110,15 +110,14 @@ func TestHandler(t *testing.T) {
 			t.Log("Got ListContainers")
 			checks.listCalled = true
 			expected := url.Values{
-				"all":     []string{"1"},
-				"filters": []string{`{"name":["test"]}`},
+				"all": []string{"1"},
 			}
 			if diff := deep.Equal(expected, req.URL.Query()); diff != nil {
 				t.Errorf("Unexpected ListContainers request:\n%v", strings.Join(diff, "\n"))
 			}
 			err = enc.Encode([]docker.APIContainers{{
 				ID:    "1234",
-				Names: []string{"test"},
+				Names: []string{"/test"},
 			}})
 			if err != nil {
 				t.Error(err)

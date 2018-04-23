@@ -23,6 +23,7 @@ var confFile = flag.String("config", "services.yaml", "The configuration file to
 var path = flag.String("path", "", "The path to serve Docker Hub webhooks on. If unspecified, serves on /.")
 var tlsCert = flag.String("tls-cert", "", "The x509 certificate to serve with, in PEM format. Optional.")
 var tlsKey = flag.String("tls-key", "", "The private key to serve with, in PEM format. Optional.")
+var logLevel = flag.Int("log-level", int(logrus.InfoLevel), "Logrus log level to use. 0 is Panic, 5 is Debug.")
 
 func main() {
 	flag.Parse()
@@ -33,6 +34,7 @@ func main() {
 	}
 
 	log := logrus.New()
+	log.Level = logrus.Level(*logLevel)
 	log.Formatter = &logrus.TextFormatter{
 		TimestampFormat: time.RFC3339,
 		ForceColors:     true,
@@ -64,7 +66,7 @@ func main() {
 		}
 	}()
 
-	cancel := make(chan os.Signal)
+	cancel := make(chan os.Signal, 1)
 	signal.Notify(cancel, syscall.SIGTERM, syscall.SIGINT)
 	<-cancel
 	err = srv.Shutdown(context.Background())
