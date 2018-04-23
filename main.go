@@ -66,7 +66,7 @@ func main() {
 		}
 	}()
 
-	cancel := make(chan os.Signal)
+	cancel := make(chan os.Signal, 1)
 	signal.Notify(cancel, syscall.SIGTERM, syscall.SIGINT)
 	<-cancel
 	err = srv.Shutdown(context.Background())
