@@ -157,7 +157,6 @@ func TestLoader(t *testing.T) {
 						AttachStdout: true,
 					},
 					HostConfig: &docker.HostConfig{
-						Binds: []string{"certs:/certs"},
 						PortBindings: map[docker.Port][]docker.PortBinding{
 							docker.Port("443/tcp"): {{
 								HostPort: "443",

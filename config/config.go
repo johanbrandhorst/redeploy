@@ -218,11 +218,6 @@ func (s Service) CreateContainerOptions() (docker.CreateContainerOptions, error)
 
 	if len(s.Volumes) > 0 {
 		for _, vol := range s.Volumes {
-			bind := vol.Source + ":" + vol.Target
-			if vol.ReadOnly {
-				bind += ":" + "ro"
-			}
-			c.HostConfig.Binds = append(c.HostConfig.Binds, bind)
 			hm := docker.HostMount{
 				Source:   vol.Source,
 				Target:   vol.Target,
